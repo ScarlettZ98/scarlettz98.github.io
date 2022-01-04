@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Hello World</title>
+    <url>/2021/12/30/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>OOD Lecture</title>
+    <url>/2021/12/17/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E8%AE%BE%E8%AE%A1-%E8%AF%BE%E5%89%8D%E5%9F%BA%E7%A1%80/</url>
+    <content><![CDATA[<h1 id="九章算法-OOD面向对象设计课-第0课"><a href="#九章算法-OOD面向对象设计课-第0课" class="headerlink" title="九章算法 OOD面向对象设计课 第0课"></a>九章算法 OOD面向对象设计课 第0课</h1><p>[TOC]</p>
+<h2 id="面向对象的三大基础"><a href="#面向对象的三大基础" class="headerlink" title="面向对象的三大基础"></a>面向对象的三大基础</h2><p>面向对象设计有三大基础，是所有面向对象编程语言都会有的功能，经常在设计中被使用到。<br><strong>他们分别是：封装（encapsulation），继承（inheritance），多态（polymorphism）。</strong></p>
+<span id="more"></span>
+<h3 id="封装（encapsulation）"><a href="#封装（encapsulation）" class="headerlink" title="封装（encapsulation）"></a>封装（encapsulation）</h3><p>封装：把属性和函数加到Class里并设置权限，仅露出需要的API。这一过程的实现使用的是access modifier，即属性和函数之前的标志符，主要有：</p>
+<ul>
+<li><code>private</code>：仅同类和自己可以访问。Python中使用名称前后双下划线表示。</li>
+<li><code>public</code>：所有的都可以访问。</li>
+<li><code>protected</code>：仅同类，自己，和子类可以访问。<br>对<code>private</code>属性，外部元素可以使用getter/setter访问。如不想被访问可以不做getter/setter。<h3 id="继承（inheritance）"><a href="#继承（inheritance）" class="headerlink" title="继承（inheritance）"></a>继承（inheritance）</h3>继承表示的是类与类之间的从属关系。子类属于父类。写法如：<figure class="highlight scala"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">extends</span> <span class="title">Animals</span> </span>&#123; ... &#125; </span><br></pre></td></tr></table></figure>
+子类继承父类所有non-private部分。但是有一些特殊的功能可以达成不同的效果。</li>
+<li><a href="https://www.runoob.com/java/java-override-overload.html">重写（overwrite）</a>：子类可以重写父类的函数，即子类重复定义一个父类里的函数。当子类的该函数被调用时，执行的是子类重写的函数。</li>
+<li><a href="https://www.runoob.com/java/java-override-overload.html">重载（overload）</a>：在同一个类中，函数名一样，函数的参数不一样。执行结果看调用时输入的参数与哪个相符。</li>
+<li><code>super</code>关键字：super关键字在子类中可以用来指代父类，类似this的作用。例：<code>super.make_noise()</code>可以在子类中执行父类的<code>make_noise()</code>函数。</li>
+<li><code>final</code>关键字：父类中声明为final的函数不能被重写。</li>
+<li><a href="https://www.runoob.com/java/java-abstraction.html"><code>abstract class</code></a>：抽象类，抽象类不可以被实例化。</li>
+<li><a href="https://www.runoob.com/java/java-abstraction.html"><code>abstract function</code></a>：抽象函数。如果一个类中包含一个抽象函数，该类必须是抽象类。不能有implementation，需要在子类中implement。</li>
+<li><a href="https://www.runoob.com/java/java-interfaces.html"><code>interface</code></a>：接口类，作用类似合同。接口的函数都是抽象函数。一个class可以implements多个接口。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">implements</span> <span class="title">Service</span>, <span class="title">Circus</span> </span>&#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="多态（polymorphism）"><a href="#多态（polymorphism）" class="headerlink" title="多态（polymorphism）"></a>多态（polymorphism）</h3>多态指一个定义的行为有不同表现形式。父类引用指向子类对象时，该引用调用的函数执行的是子类的函数。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> <span class="keyword">extends</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Circle.draw()&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Square</span> <span class="keyword">extends</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Square.draw()&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Shape c = <span class="keyword">new</span> Circle();</span><br><span class="line">Shape s = <span class="keyword">new</span> Square();</span><br><span class="line">c.draw() <span class="comment">// print: Circle.draw()</span></span><br><span class="line">s.draw() <span class="comment">// print: Square.draw()</span></span><br></pre></td></tr></table></figure>
+<h2 id="常见概念：Exception"><a href="#常见概念：Exception" class="headerlink" title="常见概念：Exception"></a>常见概念：Exception</h2><a href="https://www.runoob.com/java/java-exceptions.html">Java中有两种exception</a>：checked exception和Unchecked exception。</li>
+</ul>
+<p><strong>Checked exception</strong>：要预料到可能发生的问题，在代码附近用throw-try-catch。编译的时候，编译器会检测是否包含了这种情况。<br><strong>Unchecked exception</strong>：编译器不会主动检测是否出现异常，不会影响编译，但是可能运行期间出问题。</p>
+<h3 id="如何定义exception"><a href="#如何定义exception" class="headerlink" title="如何定义exception"></a>如何定义exception</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyException</span><span class="params">(String s)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(s);    <span class="comment">// 父类的constructor</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="在可能发生exception的地方应该如何定义"><a href="#在可能发生exception的地方应该如何定义" class="headerlink" title="在可能发生exception的地方应该如何定义"></a>在可能发生exception的地方应该如何定义</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> <span class="keyword">throws</span> MyException </span>&#123; ... &#125; <span class="comment">// 隐式</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test2</span><span class="params">()</span>  <span class="comment">// 显式捕获</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    <span class="keyword">try</span> &#123; ... &#125; <span class="keyword">catch</span>(MyException e) &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="常见Java语法：Enum"><a href="#常见Java语法：Enum" class="headerlink" title="常见Java语法：Enum"></a>常见Java语法：Enum</h2><p>枚举变量Enum，列举已经知道的所有可能，后面方便调用，也更有效率。<br>好处有几点：增强可读性，防止异常输入，可以配合switch case使用。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">TrafficSignal</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    RED, YELLOW, GREEN</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Testing</span> </span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    TrafficSignal signal = TrafficSignal.RED;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+]]></content>
+      <tags>
+        <tag>test</tag>
+      </tags>
+  </entry>
+</search>
