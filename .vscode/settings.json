@@ -3,11 +3,16 @@
   "git.inputValidationLength": 72,
   "git.inputValidationSubjectLength": 50,
   "git.useCommitInputAsStashMessage": true,
-  "workbench.settings.editor": "json",
+  "git.verboseCommit": true,
   "github.copilot.enable": {
     "*": true,
     "git-commit": true,
-    "git-rebase": true
+    "git-rebase": true,
+    "scm": true
   },
-  "git.verboseCommit": true
+  "github.copilot.editor.enableAutoCompletions": true,
+  "scm.inputFontFamily": "SF Mono, Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
+  "git.alwaysShowStagedChangesResourceGroup": true,
+  "git.showInlineOpenFileAction": true,
+  "workbench.editor.enablePreview": false
 }
