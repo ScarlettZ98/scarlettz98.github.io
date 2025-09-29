@@ -1,0 +1,16 @@
+{
+  "types": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "chore", "section": "Chores", "hidden": false },
+    { "type": "docs", "section": "Documentation", "hidden": false },
+    { "type": "style", "section": "Styles", "hidden": true },
+    { "type": "refactor", "section": "Code Refactoring", "hidden": false },
+    { "type": "perf", "section": "Performance Improvements", "hidden": false },
+    { "type": "test", "section": "Tests", "hidden": false },
+    { "type": "build", "section": "Build System", "hidden": false },
+    { "type": "ci", "section": "Continuous Integration", "hidden": false }
+  ],
+  "commitUrlFormat": "https://github.com/ScarlettZ98/scarlettz98.github.io/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/ScarlettZ98/scarlettz98.github.io/compare/{{previousTag}}...{{currentTag}}"
+}

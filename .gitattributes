@@ -1,0 +1,9 @@
+# Git attributes for better diff and merge behavior
+*.js linguist-language=JavaScript
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+*.md linguist-language=Markdown
+
+# Help Copilot understand commit message format
+.gitmessage merge=ours
+.conventional-commits.json merge=ours
