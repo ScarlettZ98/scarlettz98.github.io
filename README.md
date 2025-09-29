@@ -6,8 +6,7 @@ A Three.js setup for 3D development with support for custom models, textures, an
 
 ```
 scarlettz98.github.io/
-├── public/                 # Served files
-│   └── index.html         # Main HTML file
+├── index.html             # Main HTML file (GitHub Pages entry point)
 ├── src/                   # Source code
 │   ├── js/               # JavaScript files
 │   │   └── script.js     # Main Three.js application
@@ -17,6 +16,7 @@ scarlettz98.github.io/
 │       ├── models/       # 3D models (.gltf, .obj, .fbx)
 │       ├── textures/     # Texture files (.jpg, .png, .exr)
 │       └── audio/        # Audio files (.mp3, .ogg, .wav)
+├── public/               # Additional static files (optional)
 ├── docs/                 # Documentation and config
 │   ├── .gitmessage       # Git commit template
 │   └── *.md             # Project documentation
@@ -35,7 +35,7 @@ scarlettz98.github.io/
 
 ## Getting Started
 
-1. Open `public/index.html` in your browser
+1. Open `index.html` in your browser (or visit your GitHub Pages URL)
 2. You'll see a black canvas with a green rotating cube
 3. Check the browser console for confirmation messages
 4. Start adding your 3D objects in `src/js/script.js`
