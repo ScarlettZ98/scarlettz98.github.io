@@ -14,5 +14,13 @@
   "scm.inputFontFamily": "SF Mono, Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
   "git.alwaysShowStagedChangesResourceGroup": true,
   "git.showInlineOpenFileAction": true,
-  "workbench.editor.enablePreview": false
+  "workbench.editor.enablePreview": false,
+  "files.associations": {
+    "*.gltf": "json",
+    "*.glb": "binary"
+  },
+  "emmet.includeLanguages": {
+    "javascript": "html"
+  },
+  "liveServer.settings.root": "/public"
 }

@@ -1,6 +1,28 @@
-# Three.js Empty Canvas Project
+# Three.js 3D Canvas Project
 
-A basic Three.js setup with an empty canvas ready for 3D development.
+A Three.js setup for 3D development with support for custom models, textures, and audio.
+
+## Project Structure
+
+```
+scarlettz98.github.io/
+├── public/                 # Served files
+│   └── index.html         # Main HTML file
+├── src/                   # Source code
+│   ├── js/               # JavaScript files
+│   │   └── script.js     # Main Three.js application
+│   ├── css/              # Stylesheets
+│   │   └── style.css     # Main styles
+│   └── assets/           # Static assets
+│       ├── models/       # 3D models (.gltf, .obj, .fbx)
+│       ├── textures/     # Texture files (.jpg, .png, .exr)
+│       └── audio/        # Audio files (.mp3, .ogg, .wav)
+├── docs/                 # Documentation and config
+│   ├── .gitmessage       # Git commit template
+│   └── *.md             # Project documentation
+├── .vscode/              # VS Code settings
+└── .github/              # GitHub configuration
+```
 
 ## Features
 
@@ -13,10 +35,22 @@ A basic Three.js setup with an empty canvas ready for 3D development.
 
 ## Getting Started
 
-1. Open `index.html` in your browser
-2. You'll see a black canvas - this is your empty Three.js scene
+1. Open `public/index.html` in your browser
+2. You'll see a black canvas with a green rotating cube
 3. Check the browser console for confirmation messages
-4. Start adding your 3D objects in `script.js`
+4. Start adding your 3D objects in `src/js/script.js`
+
+## Adding 3D Models
+
+1. Place your models in `src/assets/models/`
+2. Use GLTFLoader for .gltf/.glb files (recommended)
+3. Example code is provided in the models README
+
+## Adding Textures
+
+1. Place textures in `src/assets/textures/`
+2. Use TextureLoader to load them
+3. Organize by type (materials, environments, etc.)
 
 ## Development Guidelines
 

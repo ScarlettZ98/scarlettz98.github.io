@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+.cache/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Large asset files (if you don't want to commit them)
+# Uncomment these if your models/textures are too large for git
+# src/assets/models/**/*.glb
+# src/assets/models/**/*.fbx
+# src/assets/textures/**/*.exr
+# src/assets/textures/**/*.hdr
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Three.js builds (if using local builds)
+three.js
+three.min.js
