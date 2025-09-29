@@ -3,17 +3,31 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Three.js Empty Canvas</title>
+        <title>Three.js Isometric Room</title>
         <link rel="stylesheet" href="src/css/style.css">
     </head>
     <body>
         <div id="container">
             <canvas id="canvas"></canvas>
+            <div class="info">
+                <div>🖱️ Drag to rotate • 🔄 Scroll to zoom</div>
+                <div>💡 +/- or ↑/↓ arrows to adjust brightness • R to
+                    reset</div>
+                <div id="loading-status">Loading room model...</div>
+            </div>
+            <div class="brightness-controls">
+                <button id="brightness-up">🔆 Brighter</button>
+                <button id="brightness-down">🔅 Dimmer</button>
+                <button id="brightness-reset">🔄 Reset</button>
+            </div>
         </div>
 
         <!-- Three.js CDN -->
         <script
             src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <!-- GLTFLoader for loading .glb/.gltf models -->
+        <script
+            src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
         <script src="src/js/script.js"></script>
     </body>
 </html>
