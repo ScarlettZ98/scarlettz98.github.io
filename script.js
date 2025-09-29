@@ -54,7 +54,7 @@ class ThreeJSCanvas {
         requestAnimationFrame(() => this.animate());
         
         // Animation logic goes here
-        this.rotateCube();
+        // this.rotateCube();
         
         this.renderer.render(this.scene, this.camera);
     }
