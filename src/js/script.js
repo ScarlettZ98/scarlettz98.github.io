@@ -254,8 +254,8 @@ class ThreeJSCanvas {
         const newDistance = this.cameraDistance * zoomFactor;
         
         // Prevent getting too close or too far
-        const minDistance = 2;
-        const maxDistance = 50;
+        const minDistance = 50;   // Minimum zoom distance
+        const maxDistance = 2000; // Maximum zoom distance - allows for large models
         this.cameraDistance = Math.max(minDistance, Math.min(maxDistance, newDistance));
         
         // Force immediate camera position update with new distance
