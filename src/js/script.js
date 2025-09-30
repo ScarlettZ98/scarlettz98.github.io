@@ -6,6 +6,7 @@ class ThreeJSCanvas {
         this.renderer = null;
         this.canvas = null;
         this.roomModel = null;
+        this.coffeeMugModel = null;
         this.mixer = null; // For animations if any
         this.isMouseDown = false;
         this.mouseX = 0;
@@ -450,6 +451,9 @@ class ThreeJSCanvas {
                 
                 // Optimize lighting for the loaded room
                 this.optimizeLighting();
+                
+                // Load the coffee mug model after the room is loaded
+                this.loadCoffeeMugModel();
             },
             (progress) => {
                 const percent = Math.round((progress.loaded / progress.total * 100));
@@ -468,6 +472,47 @@ class ThreeJSCanvas {
                     loadingStatus.textContent = 'Error loading room model. Check console for details.';
                     loadingStatus.style.color = '#ff6b6b';
                 }
+            }
+        );
+    }
+    
+    // Load the coffee mug model
+    loadCoffeeMugModel() {
+        const loader = new THREE.GLTFLoader();
+        
+        loader.load(
+            'src/assets/models/coffee_mug.glb',
+            (gltf) => {
+                console.log('Coffee mug model loaded successfully!', gltf);
+                
+                this.coffeeMugModel = gltf.scene;
+                
+                // Enable shadows for the coffee mug
+                this.coffeeMugModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                
+                // Scale and position the coffee mug
+                this.coffeeMugModel.scale.setScalar(10); // Adjust scale as needed
+                
+                // Position the coffee mug on a desk/table in the room
+                // You may need to adjust these coordinates based on your room layout
+                this.coffeeMugModel.position.set(100, 160, 280); // Adjust position as needed
+                
+                // Add to scene
+                this.addToScene(this.coffeeMugModel);
+                
+                console.log('Coffee mug positioned in the scene');
+            },
+            (progress) => {
+                const percent = Math.round((progress.loaded / progress.total * 100));
+                console.log('Coffee mug loading progress:', percent + '%');
+            },
+            (error) => {
+                console.error('Error loading coffee mug model:', error);
             }
         );
     }
