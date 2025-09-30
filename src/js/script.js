@@ -136,6 +136,7 @@ class ThreeJSCanvas {
         this.canvas.addEventListener('mouseup', (event) => this.onMouseUp(event));
         this.canvas.addEventListener('mouseleave', (event) => this.onMouseUp(event)); // Handle mouse leaving canvas
         this.canvas.addEventListener('wheel', (event) => this.onMouseWheel(event));
+        this.canvas.addEventListener('click', (event) => this.onCanvasClick(event));
         
         // Add touch support for mobile devices
         this.canvas.addEventListener('touchstart', (event) => this.onTouchStart(event));
@@ -205,13 +206,41 @@ class ThreeJSCanvas {
     }
 
     onCanvasClick(event) {
+        // Only process clicks if we're not dragging
+        if (this.isMouseDown) return;
+        
         // Calculate mouse position in normalized device coordinates
         const mouse = new THREE.Vector2();
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         
+        // Create a raycaster
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, this.camera);
+        
+        // Check if coffee mug is loaded and get intersections
+        if (this.coffeeMugModel) {
+            const intersects = raycaster.intersectObject(this.coffeeMugModel, true);
+            
+            if (intersects.length > 0) {
+                console.log('Coffee mug clicked! Zooming in...');
+                this.zoomToObject(this.coffeeMugModel);
+                return;
+            }
+        }
+        
+        // Check if room model is clicked (for zoom out functionality)
+        if (this.roomModel) {
+            const intersects = raycaster.intersectObject(this.roomModel, true);
+            
+            if (intersects.length > 0) {
+                console.log('Room clicked! Returning to room view...');
+                this.zoomToRoom();
+                return;
+            }
+        }
+        
         console.log('Canvas clicked at:', mouse);
-        // Add your click handling logic here
     }
     
     onMouseMove(event) {
@@ -393,6 +422,70 @@ class ThreeJSCanvas {
     resetLighting() {
         this.renderer.toneMappingExposure = 1.2;
         console.log('Lighting reset to default');
+    }
+    
+    // Zoom camera to focus on a specific object
+    zoomToObject(object) {
+        if (!object) return;
+        
+        // Get object bounding box
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        // Calculate appropriate distance based on object size
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const targetDistance = maxDim * 3; // Closer zoom for detailed view
+        
+        // Store current values for smooth transition
+        this.cameraDistance = targetDistance;
+        
+        // Calculate new camera position relative to object center
+        const offsetAngle = Math.PI / 6; // 30 degrees for better viewing angle
+        const x = center.x + targetDistance * Math.sin(offsetAngle) * Math.cos(offsetAngle);
+        const y = center.y + targetDistance * Math.sin(offsetAngle);
+        const z = center.z + targetDistance * Math.cos(offsetAngle);
+        
+        // Smoothly animate camera to new position
+        this.animateCameraTo(new THREE.Vector3(x, y, z), center);
+        
+        console.log('Zooming to object at:', center, 'Distance:', targetDistance);
+    }
+    
+    // Return camera to room overview
+    zoomToRoom() {
+        if (!this.roomModel) return;
+        
+        // Reset to isometric room view
+        this.fitCameraToModel();
+        
+        console.log('Returning to room view');
+    }
+    
+    // Animate camera to a specific position and target
+    animateCameraTo(targetPosition, lookAtTarget, duration = 1000) {
+        const startPosition = this.camera.position.clone();
+        const startTime = Date.now();
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Use easeInOutCubic for smooth animation
+            const easeProgress = progress < 0.5 
+                ? 4 * progress * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            
+            // Interpolate position
+            this.camera.position.lerpVectors(startPosition, targetPosition, easeProgress);
+            this.camera.lookAt(lookAtTarget);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+        
+        animate();
     }
     
     
