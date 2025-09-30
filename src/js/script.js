@@ -10,8 +10,14 @@ class ThreeJSCanvas {
         this.isMouseDown = false;
         this.mouseX = 0;
         this.mouseY = 0;
+        this.previousMouseX = 0;
+        this.previousMouseY = 0;
+        this.currentRotationX = 0;
+        this.currentRotationY = 0;
         this.targetRotationX = 0;
         this.targetRotationY = 0;
+        this.rotationSpeed = 0.005; // Control rotation sensitivity
+        this.damping = 0.1; // Smooth interpolation
         this.lights = []; // Store lights for brightness control
         
         this.init();
@@ -109,6 +115,11 @@ class ThreeJSCanvas {
             this.mixer.update(0.016); // 60fps
         }
         
+        // Continuous smooth camera movement even when not dragging
+        if (this.roomModel && !this.isMouseDown) {
+            this.updateCameraPosition();
+        }
+        
         // Optional: Add gentle camera rotation around the room
         // this.rotateAroundRoom();
         
@@ -123,10 +134,19 @@ class ThreeJSCanvas {
         this.canvas.addEventListener('mousedown', (event) => this.onMouseDown(event));
         this.canvas.addEventListener('mousemove', (event) => this.onMouseMove(event));
         this.canvas.addEventListener('mouseup', (event) => this.onMouseUp(event));
+        this.canvas.addEventListener('mouseleave', (event) => this.onMouseUp(event)); // Handle mouse leaving canvas
         this.canvas.addEventListener('wheel', (event) => this.onMouseWheel(event));
+        
+        // Add touch support for mobile devices
+        this.canvas.addEventListener('touchstart', (event) => this.onTouchStart(event));
+        this.canvas.addEventListener('touchmove', (event) => this.onTouchMove(event));
+        this.canvas.addEventListener('touchend', (event) => this.onTouchEnd(event));
         
         // Add keyboard controls for lighting
         window.addEventListener('keydown', (event) => this.onKeyDown(event));
+        
+        // Prevent context menu on right click
+        this.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     }
     
     onWindowResize() {
@@ -137,12 +157,51 @@ class ThreeJSCanvas {
     
     onMouseDown(event) {
         this.isMouseDown = true;
+        this.previousMouseX = event.clientX;
+        this.previousMouseY = event.clientY;
         this.mouseX = event.clientX;
         this.mouseY = event.clientY;
+        
+        // Store current rotation as starting point
+        this.currentRotationX = this.targetRotationX;
+        this.currentRotationY = this.targetRotationY;
+        
+        // Prevent default to avoid unwanted selection
+        event.preventDefault();
     }
     
     onMouseUp(event) {
         this.isMouseDown = false;
+    }
+
+    // Touch event handlers for mobile support
+    onTouchStart(event) {
+        if (event.touches.length === 1) {
+            event.preventDefault();
+            const touch = event.touches[0];
+            this.onMouseDown({ 
+                clientX: touch.clientX, 
+                clientY: touch.clientY,
+                preventDefault: () => {}
+            });
+        }
+    }
+    
+    onTouchMove(event) {
+        if (event.touches.length === 1) {
+            event.preventDefault();
+            const touch = event.touches[0];
+            this.onMouseMove({ 
+                clientX: touch.clientX, 
+                clientY: touch.clientY,
+                preventDefault: () => {}
+            });
+        }
+    }
+    
+    onTouchEnd(event) {
+        event.preventDefault();
+        this.onMouseUp(event);
     }
 
     onCanvasClick(event) {
@@ -158,17 +217,22 @@ class ThreeJSCanvas {
     onMouseMove(event) {
         if (!this.isMouseDown || !this.roomModel) return;
         
-        const deltaX = event.clientX - this.mouseX;
-        const deltaY = event.clientY - this.mouseY;
+        // Calculate delta from the initial mouse down position
+        const deltaX = event.clientX - this.previousMouseX;
+        const deltaY = event.clientY - this.previousMouseY;
         
-        this.targetRotationY += deltaX * 0.01;
-        this.targetRotationX += deltaY * 0.01;
+        // Update target rotations based on delta and current rotation
+        this.targetRotationY = this.currentRotationY + deltaX * this.rotationSpeed;
+        this.targetRotationX = this.currentRotationX + deltaY * this.rotationSpeed;
         
-        this.mouseX = event.clientX;
-        this.mouseY = event.clientY;
+        // Clamp vertical rotation to prevent gimbal lock
+        this.targetRotationX = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, this.targetRotationX));
         
-        // Rotate camera around the room
+        // Update camera position smoothly
         this.updateCameraPosition();
+        
+        // Prevent default to avoid text selection
+        event.preventDefault();
     }
     
     onMouseWheel(event) {
@@ -202,10 +266,12 @@ class ThreeJSCanvas {
         const distance = this.camera.position.distanceTo(center);
         
         // Convert to spherical coordinates for rotation
-        this.camera.position.x = center.x + distance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
-        this.camera.position.y = center.y + distance * Math.sin(this.targetRotationX);
-        this.camera.position.z = center.z + distance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
+        const x = center.x + distance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
+        const y = center.y + distance * Math.sin(this.targetRotationX);
+        const z = center.z + distance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
         
+        // Apply smooth interpolation for smoother movement
+        this.camera.position.lerp(new THREE.Vector3(x, y, z), this.damping);
         this.camera.lookAt(center);
     }
     
@@ -442,6 +508,16 @@ class ThreeJSCanvas {
         
         this.camera.lookAt(center);
         
+        // Initialize rotation values based on initial camera position
+        const initialDirection = new THREE.Vector3();
+        initialDirection.subVectors(this.camera.position, center).normalize();
+        
+        // Calculate initial spherical coordinates
+        this.targetRotationY = Math.atan2(initialDirection.x, initialDirection.z);
+        this.targetRotationX = Math.asin(initialDirection.y);
+        this.currentRotationX = this.targetRotationX;
+        this.currentRotationY = this.targetRotationY;
+        
         // Update camera near/far based on model size
         this.camera.near = distance / 100;
         this.camera.far = distance * 10;
@@ -449,6 +525,7 @@ class ThreeJSCanvas {
         
         console.log('Camera positioned at:', this.camera.position);
         console.log('Looking at center:', center);
+        console.log('Initial rotations - X:', this.targetRotationX, 'Y:', this.targetRotationY);
     }
     
     // Optimize lighting based on the room model
