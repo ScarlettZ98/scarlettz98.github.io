@@ -549,7 +549,7 @@ class ThreeJSCanvas {
         console.log('Camera positioned in isometric view');
         console.log('Initial Y rotation:', (this.targetRotationY * 180 / Math.PI).toFixed(1), '°');
         console.log('Initial X rotation:', (this.targetRotationX * 180 / Math.PI).toFixed(1), '°');
-        console.log('Y rotation range: ±45° from isometric position');
+        console.log('Y rotation range: 30° from isometric position');
         console.log('Initial distance:', this.cameraDistance);
     }
     
