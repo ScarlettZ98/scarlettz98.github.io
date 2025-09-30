@@ -66,11 +66,11 @@ class ThreeJSCanvas {
         this.renderer.toneMappingExposure = 1.2; // Increase exposure for brighter scene
         
         // Enhanced lighting for room model
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.8); // Increased ambient light
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Increased ambient light
         this.scene.add(ambientLight);
         this.lights.push(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); // Increased intensity
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 5); // Increased intensity
         directionalLight.position.set(10, 10, 5);
         directionalLight.castShadow = true;
         directionalLight.shadow.mapSize.width = 2048;
