@@ -25,8 +25,10 @@ class ThreeJSCanvas {
         
         // Create scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x87CEEB); // Sky blue background for better room visibility
         
+        // Create ombre background
+        this.createOmbreBackground("#C79AB8", "#E8AD9F", "#F5C9A3");
+
         // Create camera (positioned for isometric room view)
         this.camera = new THREE.PerspectiveCamera(
             60, // Reduced field of view for better perspective
@@ -482,6 +484,34 @@ class ThreeJSCanvas {
         this.scene.add(fillLight2);
         
         console.log('Lighting optimized for room model');
+    }
+    
+    // Create ombre background
+    createOmbreBackground(beginningColor, middleColor, endColor) {
+        // Create a canvas for the gradient
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        
+        const context = canvas.getContext('2d');
+        
+        // Create gradient from pink to purple
+        const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, beginningColor); // Hot Pink at top
+        gradient.addColorStop(0.5, middleColor); // Orchid in middle
+        gradient.addColorStop(1, endColor); // Blue Violet at bottom
+        
+        // Fill canvas with gradient
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Create texture from canvas
+        const texture = new THREE.CanvasTexture(canvas);
+        
+        // Set as scene background
+        this.scene.background = texture;
+        
+        console.log('Ombre background created');
     }
     
     // Optional: Rotate camera around the room
