@@ -18,6 +18,7 @@ class ThreeJSCanvas {
         this.targetRotationY = 0;
         this.rotationSpeed = 0.005; // Control rotation sensitivity
         this.damping = 0.1; // Smooth interpolation
+        this.cameraDistance = 15; // Track camera distance separately
         this.lights = []; // Store lights for brightness control
         
         this.init();
@@ -33,14 +34,14 @@ class ThreeJSCanvas {
         this.scene = new THREE.Scene();
         
         // Create ombre background
-        this.createOmbreBackground("#C79AB8", "#E8AD9F", "#F5C9A3");
+        this.createOmbreBackground("#0A0F1F", "#1C3C5E", "#FF6B35");
 
         // Create camera (positioned for isometric room view)
         this.camera = new THREE.PerspectiveCamera(
-            60, // Reduced field of view for better perspective
+            45, // Reduced field of view for better perspective
             window.innerWidth / window.innerHeight, // Aspect ratio
             0.01, // Closer near clipping plane
-            2000 // Increased far clipping plane
+            200 // Increased far clipping plane
         );
         // Position camera for better room viewing (temporary position)
         this.camera.position.set(10, 10, 10);
@@ -219,15 +220,23 @@ class ThreeJSCanvas {
         
         // Calculate delta from the initial mouse down position
         const deltaX = event.clientX - this.previousMouseX;
-        const deltaY = event.clientY - this.previousMouseY;
-        
-        // Update target rotations based on delta and current rotation
+        // Remove deltaY calculation since we don't need vertical rotation
+    
+        // Update target rotation ONLY for Y-axis (horizontal rotation)
         this.targetRotationY = this.currentRotationY + deltaX * this.rotationSpeed;
-        this.targetRotationX = this.currentRotationX + deltaY * this.rotationSpeed;
-        
-        // Clamp vertical rotation to prevent gimbal lock
-        this.targetRotationX = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, this.targetRotationX));
-        
+    
+        // Get the initial isometric Y rotation (45°)
+        const isometricYRotation = Math.PI / 4; // 45 degrees
+        const maxRotationOffset = Math.PI / 8; // ±22.5 degrees from isometric position
+
+        // Clamp Y rotation to ±22.5 degrees from the isometric position
+        const minRotation = isometricYRotation - maxRotationOffset; // 22.5°
+        const maxRotation = isometricYRotation + maxRotationOffset; // 67.5°
+        this.targetRotationY = Math.max(minRotation, Math.min(maxRotation, this.targetRotationY));
+    
+        // Keep X rotation fixed (no vertical rotation)
+        // this.targetRotationX remains unchanged
+    
         // Update camera position smoothly
         this.updateCameraPosition();
         
@@ -240,22 +249,19 @@ class ThreeJSCanvas {
         
         if (!this.roomModel) return;
         
-        const box = new THREE.Box3().setFromObject(this.roomModel);
-        const center = box.getCenter(new THREE.Vector3());
-        
-        // Zoom in/out by moving camera closer/further from center
-        const direction = new THREE.Vector3();
-        direction.subVectors(this.camera.position, center).normalize();
-        
+        // Calculate zoom factor based on scroll direction
         const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9;
-        const distance = this.camera.position.distanceTo(center) * zoomFactor;
+        const newDistance = this.cameraDistance * zoomFactor;
         
         // Prevent getting too close or too far
         const minDistance = 2;
         const maxDistance = 50;
-        const clampedDistance = Math.max(minDistance, Math.min(maxDistance, distance));
+        this.cameraDistance = Math.max(minDistance, Math.min(maxDistance, newDistance));
         
-        this.camera.position.copy(center).add(direction.multiplyScalar(clampedDistance));
+        // Force immediate camera position update with new distance
+        this.updateCameraPositionImmediate();
+        
+        console.log('Zoom - New Distance:', this.cameraDistance.toFixed(2), 'Zoom Factor:', zoomFactor);
     }
     
     updateCameraPosition() {
@@ -263,15 +269,31 @@ class ThreeJSCanvas {
         
         const box = new THREE.Box3().setFromObject(this.roomModel);
         const center = box.getCenter(new THREE.Vector3());
-        const distance = this.camera.position.distanceTo(center);
         
-        // Convert to spherical coordinates for rotation
-        const x = center.x + distance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
-        const y = center.y + distance * Math.sin(this.targetRotationX);
-        const z = center.z + distance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
+        // Use tracked distance instead of calculating from current position
+        const x = center.x + this.cameraDistance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
+        const y = center.y + this.cameraDistance * Math.sin(this.targetRotationX);
+        const z = center.z + this.cameraDistance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
         
         // Apply smooth interpolation for smoother movement
         this.camera.position.lerp(new THREE.Vector3(x, y, z), this.damping);
+        this.camera.lookAt(center);
+    }
+    
+    // Immediate camera position update without lerping (for zoom)
+    updateCameraPositionImmediate() {
+        if (!this.roomModel) return;
+        
+        const box = new THREE.Box3().setFromObject(this.roomModel);
+        const center = box.getCenter(new THREE.Vector3());
+        
+        // Calculate position using tracked distance
+        const x = center.x + this.cameraDistance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
+        const y = center.y + this.cameraDistance * Math.sin(this.targetRotationX);
+        const z = center.z + this.cameraDistance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
+        
+        // Set position immediately without lerping
+        this.camera.position.set(x, y, z);
         this.camera.lookAt(center);
     }
     
@@ -496,36 +518,39 @@ class ThreeJSCanvas {
         // Calculate the maximum dimension
         const maxDim = Math.max(size.x, size.y, size.z);
         
-        // Position camera based on the model size
-        const distance = maxDim * 2; // Move camera further back
+        // Set up isometric view angles
+        // Isometric view: 45° horizontal rotation, 35.26° vertical rotation
+        const isometricYRotation = Math.PI / 4; // 45 degrees
+        const isometricXRotation = Math.atan(Math.sin(Math.PI / 4)); // ~35.26 degrees (isometric angle)
         
-        // Position camera for isometric-like view
-        this.camera.position.set(
-            center.x + distance * 0.7,
-            center.y + distance * 0.7,
-            center.z + distance * 0.7
-        );
+        // Position camera based on the model size for isometric view
+        this.cameraDistance = maxDim * 2.5; // Adjust distance for good view
         
+        // Set initial rotation values for isometric view
+        this.targetRotationY = isometricYRotation; // 45° horizontal (isometric)
+        this.currentRotationY = isometricYRotation;
+        this.targetRotationX = isometricXRotation; // ~35.26° vertical (isometric)
+        this.currentRotationX = isometricXRotation;
+        
+        // Calculate camera position using spherical coordinates for isometric view
+        const x = center.x + this.cameraDistance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
+        const y = center.y + this.cameraDistance * Math.sin(this.targetRotationX);
+        const z = center.z + this.cameraDistance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
+        
+        // Set camera position and look at center
+        this.camera.position.set(x, y, z);
         this.camera.lookAt(center);
         
-        // Initialize rotation values based on initial camera position
-        const initialDirection = new THREE.Vector3();
-        initialDirection.subVectors(this.camera.position, center).normalize();
-        
-        // Calculate initial spherical coordinates
-        this.targetRotationY = Math.atan2(initialDirection.x, initialDirection.z);
-        this.targetRotationX = Math.asin(initialDirection.y);
-        this.currentRotationX = this.targetRotationX;
-        this.currentRotationY = this.targetRotationY;
-        
         // Update camera near/far based on model size
-        this.camera.near = distance / 100;
-        this.camera.far = distance * 10;
+        this.camera.near = this.cameraDistance / 100;
+        this.camera.far = this.cameraDistance * 10;
         this.camera.updateProjectionMatrix();
         
-        console.log('Camera positioned at:', this.camera.position);
-        console.log('Looking at center:', center);
-        console.log('Initial rotations - X:', this.targetRotationX, 'Y:', this.targetRotationY);
+        console.log('Camera positioned in isometric view');
+        console.log('Initial Y rotation:', (this.targetRotationY * 180 / Math.PI).toFixed(1), '°');
+        console.log('Initial X rotation:', (this.targetRotationX * 180 / Math.PI).toFixed(1), '°');
+        console.log('Y rotation range: ±45° from isometric position');
+        console.log('Initial distance:', this.cameraDistance);
     }
     
     // Optimize lighting based on the room model
