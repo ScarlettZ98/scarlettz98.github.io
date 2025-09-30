@@ -227,11 +227,11 @@ class ThreeJSCanvas {
     
         // Get the initial isometric Y rotation (45°)
         const isometricYRotation = Math.PI / 4; // 45 degrees
-        const maxRotationOffset = Math.PI / 8; // ±22.5 degrees from isometric position
+        const maxRotationOffset = Math.PI / 6; // ±30 degrees from isometric position
 
-        // Clamp Y rotation to ±22.5 degrees from the isometric position
-        const minRotation = isometricYRotation - maxRotationOffset; // 22.5°
-        const maxRotation = isometricYRotation + maxRotationOffset; // 67.5°
+        // Clamp Y rotation to ±30 degrees from the isometric position
+        const minRotation = isometricYRotation - maxRotationOffset; // 15°
+        const maxRotation = isometricYRotation + maxRotationOffset; // 75°
         this.targetRotationY = Math.max(minRotation, Math.min(maxRotation, this.targetRotationY));
     
         // Keep X rotation fixed (no vertical rotation)
