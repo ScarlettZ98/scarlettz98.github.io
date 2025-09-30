@@ -104,8 +104,6 @@ class ThreeJSCanvas {
         // Load the room model
         this.loadRoomModel();
         
-        // Setup brightness control buttons
-        this.setupBrightnessButtons();
     }
     
     animate() {
@@ -396,35 +394,6 @@ class ThreeJSCanvas {
         console.log('Lighting reset to default');
     }
     
-    setupBrightnessButtons() {
-        // Wait for DOM to be ready
-        setTimeout(() => {
-            const brighterBtn = document.getElementById('brightness-up');
-            const dimmerBtn = document.getElementById('brightness-down');
-            const resetBtn = document.getElementById('brightness-reset');
-            
-            if (brighterBtn) {
-                brighterBtn.addEventListener('click', () => {
-                    this.adjustBrightness(1.1);
-                    console.log('Brightness increased via button');
-                });
-            }
-            
-            if (dimmerBtn) {
-                dimmerBtn.addEventListener('click', () => {
-                    this.adjustBrightness(0.9);
-                    console.log('Brightness decreased via button');
-                });
-            }
-            
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                    this.resetLighting();
-                    console.log('Lighting reset via button');
-                });
-            }
-        }, 100);
-    }
     
     // Utility method to add objects to the scene
     addToScene(object) {
