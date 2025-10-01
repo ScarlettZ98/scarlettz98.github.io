@@ -281,14 +281,17 @@ class ThreeJSCanvas {
         
         // Calculate delta from the initial mouse down position
         const deltaX = event.clientX - this.previousMouseX;
-        const deltaY = event.clientY - this.previousMouseY;
     
-        // Update target rotation based on mouse movement
-        this.targetRotationY = this.currentRotationY + deltaX * this.rotationSpeed; // Horizontal rotation
-        this.targetRotationX = this.currentRotationX + deltaY * this.rotationSpeed; // Vertical rotation
+        // Update target rotation based on mouse movement (Y-axis only)
+        this.targetRotationY = this.currentRotationY + deltaX * this.rotationSpeed; // Horizontal rotation only
+        // this.targetRotationX remains unchanged (no vertical rotation)
     
-        // Clamp vertical rotation to prevent flipping (0.1 to π - 0.1)
-        this.targetRotationX = Math.max(0.1, Math.min(Math.PI - 0.1, this.targetRotationX));
+        // Clamp horizontal rotation to ±30 degrees from initial position (π/4 = 45°)
+        const initialHorizontalAngle = Math.PI / 4; // 45 degrees
+        const rotationLimit = Math.PI / 6; // 30 degrees in radians
+        const minRotation = initialHorizontalAngle - rotationLimit; // 15 degrees
+        const maxRotation = initialHorizontalAngle + rotationLimit; // 75 degrees
+        this.targetRotationY = Math.max(minRotation, Math.min(maxRotation, this.targetRotationY));
     
         // Update camera position smoothly
         this.updateCameraPosition();
