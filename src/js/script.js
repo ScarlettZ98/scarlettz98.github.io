@@ -16,7 +16,7 @@ class ThreeJSCanvas {
         this.targetRotationY = Math.PI / 4; // Start at 45 degrees horizontal
         this.rotationSpeed = 0.005; // Control rotation sensitivity
         this.damping = 0.1; // Smooth interpolation
-        this.cameraDistance = 15; // Track camera distance separately
+        this.cameraDistance = 25; 
         
         // Grid system for edit mode
         this.gridHelpers = {
@@ -78,11 +78,12 @@ class ThreeJSCanvas {
         this.renderer.toneMappingExposure = 1.2; // Increase exposure for brighter scene
         
         // Basic lighting setup
-        const ambientLight = new THREE.AmbientLight(0x404040, 1.0);
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // Increased ambient light
         this.scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0); // Increased intensity
         directionalLight.position.set(10, 10, 5);
+        directionalLight.castShadow = true;
         this.scene.add(directionalLight);
         
         console.log('Three.js canvas initialized successfully!');
@@ -93,6 +94,9 @@ class ThreeJSCanvas {
         } else {
             console.log('👁️ VIEW MODE is active');
         }
+        
+        // Build a blue floor
+        this.build_floor(10, 6, "#0000ff");
         
     }
     
@@ -397,7 +401,7 @@ class ThreeJSCanvas {
     }
     
     resetCamera() {
-        this.cameraDistance = 15;
+        this.cameraDistance = 25;
         this.targetRotationX = Math.PI / 3; // 60 degrees vertical
         this.targetRotationY = Math.PI / 4; // 45 degrees horizontal
         this.currentRotationX = this.targetRotationX;
@@ -417,6 +421,41 @@ class ThreeJSCanvas {
     // Utility method to remove objects from the scene
     removeFromScene(object) {
         this.scene.remove(object);
+    }
+    
+    // Build a floor block with specified dimensions and color
+    build_floor(length, width, color) {
+        // Validate that length and width are even integers
+        if (!Number.isInteger(length) || !Number.isInteger(width) || length % 2 !== 0 || width % 2 !== 0) {
+            console.error('Length and width must be even integers');
+            return null;
+        }
+        
+        // Create geometry with 1 unit height
+        const geometry = new THREE.BoxGeometry(length, 1, width);
+        
+        // Create material with specified color
+        const material = new THREE.MeshLambertMaterial({ color: color });
+        
+        // Create the mesh
+        const floorMesh = new THREE.Mesh(geometry, material);
+        
+        // Position the floor so that:
+        // - Center is at origin on X and Z axes
+        // - Top surface is at y = 0 (so bottom is at y = -1)
+        floorMesh.position.set(0, -0.5, 0);
+        
+        // Enable shadows
+        floorMesh.castShadow = true;
+        floorMesh.receiveShadow = true;
+        
+        // Add to scene
+        this.addToScene(floorMesh);
+        
+        console.log(`Floor created: ${length}x${width} units, color: ${color}`);
+        console.log(`Position: x=${-length/2} to ${length/2}, z=${-width/2} to ${width/2}, y=-1 to 0`);
+        
+        return floorMesh;
     }
     
 }
