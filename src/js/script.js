@@ -31,6 +31,9 @@ class ThreeJSCanvas {
         // Get canvas element
         this.canvas = document.getElementById('canvas');
         
+        // Read project settings
+        this.loadProjectSettings();
+        
         // Create scene
         this.scene = new THREE.Scene();
         
@@ -75,6 +78,13 @@ class ThreeJSCanvas {
         this.scene.add(directionalLight);
         
         console.log('Three.js canvas initialized successfully!');
+        
+        // Display edit mode status
+        if (this.editMode) {
+            console.log('🔧 EDIT MODE is ACTIVE');
+        } else {
+            console.log('👁️ VIEW MODE is active');
+        }
         
     }
     
@@ -125,6 +135,20 @@ class ThreeJSCanvas {
         this.scene.background = texture;
         
         console.log('Ombre background created');
+    }
+    
+    loadProjectSettings() {
+        // Load settings from global ProjectSettings object
+        if (typeof window.ProjectSettings !== 'undefined') {
+            this.editMode = window.ProjectSettings.EDIT_MODE;
+            console.log('Project Settings loaded:', {
+                EDIT_MODE: this.editMode
+            });
+        } else {
+            // Fallback if settings file is not loaded
+            this.editMode = false;
+            console.warn('ProjectSettings not found, using default values');
+        }
     }
     
     // ==========================================
@@ -212,7 +236,12 @@ class ThreeJSCanvas {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         
-        console.log('Canvas clicked at:', mouse);
+        if (this.editMode) {
+            console.log('Edit mode is enabled - Canvas clicked at:', mouse);
+            // Additional edit mode functionality can be added here
+        } else {
+            console.log('View mode - Canvas clicked at:', mouse);
+        }
     }
 
     // Touch Event Handlers for Mobile Support
