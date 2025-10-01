@@ -12,11 +12,18 @@ class ThreeJSCanvas {
         this.previousMouseY = 0;
         this.currentRotationX = 0;
         this.currentRotationY = 0;
-        this.targetRotationX = 0;
-        this.targetRotationY = 0;
+        this.targetRotationX = Math.PI / 3; // Start at 60 degrees vertical
+        this.targetRotationY = Math.PI / 4; // Start at 45 degrees horizontal
         this.rotationSpeed = 0.005; // Control rotation sensitivity
         this.damping = 0.1; // Smooth interpolation
         this.cameraDistance = 15; // Track camera distance separately
+        
+        // Grid system for edit mode
+        this.gridHelpers = {
+            x: null, // YZ plane grid
+            y: null, // XZ plane grid
+            z: null  // XY plane grid
+        };
         
         this.init();
         this.animate();
@@ -47,9 +54,10 @@ class ThreeJSCanvas {
             0.01, // Closer near clipping plane
             200 // Increased far clipping plane
         );
-        // Position camera for better viewing
-        this.camera.position.set(10, 10, 10);
-        this.camera.lookAt(0, 0, 0);
+        // Position camera for better viewing (initial spherical position)
+        this.currentRotationX = this.targetRotationX;
+        this.currentRotationY = this.targetRotationY;
+        this.updateCameraPositionImmediate();
         
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({ 
@@ -107,6 +115,9 @@ class ThreeJSCanvas {
         
         // Prevent context menu on right click
         this.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
+        
+        // Set up edit mode controls
+        this.setupEditModeControls();
     }
     
     // Create ombre background
@@ -148,6 +159,80 @@ class ThreeJSCanvas {
             // Fallback if settings file is not loaded
             this.editMode = false;
             console.warn('ProjectSettings not found, using default values');
+        }
+    }
+    
+    setupEditModeControls() {
+        // Show/hide edit controls based on edit mode
+        const editControls = document.getElementById('edit-controls');
+        if (this.editMode && editControls) {
+            editControls.style.display = 'block';
+            
+            // Set up grid checkbox listeners
+            document.getElementById('grid-x').addEventListener('change', (e) => {
+                this.toggleGrid('x', e.target.checked);
+            });
+            
+            document.getElementById('grid-y').addEventListener('change', (e) => {
+                this.toggleGrid('y', e.target.checked);
+            });
+            
+            document.getElementById('grid-z').addEventListener('change', (e) => {
+                this.toggleGrid('z', e.target.checked);
+            });
+        } else if (editControls) {
+            editControls.style.display = 'none';
+        }
+    }
+    
+    createGridHelper(axis) {
+        const gridSize = 20;
+        const divisions = 20;
+        const colorCenterLine = 0xff0000; // Red center lines (origin)
+        const colorGrid = 0x222222;
+        
+        let gridHelper;
+        
+        switch(axis) {
+            case 'x': // YZ plane grid
+                gridHelper = new THREE.GridHelper(gridSize, divisions, colorCenterLine, colorGrid);
+                gridHelper.rotateZ(Math.PI / 2); // Rotate to YZ plane
+                gridHelper.material.opacity = 0.5;
+                gridHelper.material.transparent = true;
+                break;
+                
+            case 'y': // XZ plane grid (default orientation)
+                gridHelper = new THREE.GridHelper(gridSize, divisions, colorCenterLine, colorGrid);
+                gridHelper.material.opacity = 0.5;
+                gridHelper.material.transparent = true;
+                break;
+                
+            case 'z': // XY plane grid
+                gridHelper = new THREE.GridHelper(gridSize, divisions, colorCenterLine, colorGrid);
+                gridHelper.rotateX(Math.PI / 2); // Rotate to XY plane
+                gridHelper.material.opacity = 0.5;
+                gridHelper.material.transparent = true;
+                break;
+        }
+        
+        return gridHelper;
+    }
+    
+    toggleGrid(axis, show) {
+        if (show) {
+            // Create and add grid if it doesn't exist
+            if (!this.gridHelpers[axis]) {
+                this.gridHelpers[axis] = this.createGridHelper(axis);
+                this.scene.add(this.gridHelpers[axis]);
+                console.log(`${axis.toUpperCase()} grid enabled`);
+            }
+        } else {
+            // Remove grid if it exists
+            if (this.gridHelpers[axis]) {
+                this.scene.remove(this.gridHelpers[axis]);
+                this.gridHelpers[axis] = null;
+                console.log(`${axis.toUpperCase()} grid disabled`);
+            }
         }
     }
     
@@ -199,11 +284,11 @@ class ThreeJSCanvas {
         const deltaY = event.clientY - this.previousMouseY;
     
         // Update target rotation based on mouse movement
-        this.targetRotationY = this.currentRotationY + deltaX * this.rotationSpeed;
-        this.targetRotationX = this.currentRotationX + deltaY * this.rotationSpeed;
+        this.targetRotationY = this.currentRotationY + deltaX * this.rotationSpeed; // Horizontal rotation
+        this.targetRotationX = this.currentRotationX + deltaY * this.rotationSpeed; // Vertical rotation
     
-        // Clamp rotations to reasonable limits
-        this.targetRotationX = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.targetRotationX));
+        // Clamp vertical rotation to prevent flipping (0.1 to π - 0.1)
+        this.targetRotationX = Math.max(0.1, Math.min(Math.PI - 0.1, this.targetRotationX));
     
         // Update camera position smoothly
         this.updateCameraPosition();
@@ -279,10 +364,14 @@ class ThreeJSCanvas {
     // ==========================================
     
     updateCameraPosition() {
-        // Calculate camera position in spherical coordinates
-        const x = this.cameraDistance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
-        const y = this.cameraDistance * Math.sin(this.targetRotationX);
-        const z = this.cameraDistance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
+        // Calculate camera position using proper spherical coordinates
+        // targetRotationX = vertical angle (phi), targetRotationY = horizontal angle (theta)
+        const phi = this.targetRotationX; // Vertical rotation
+        const theta = this.targetRotationY; // Horizontal rotation
+        
+        const x = this.cameraDistance * Math.sin(phi) * Math.cos(theta);
+        const y = this.cameraDistance * Math.cos(phi);
+        const z = this.cameraDistance * Math.sin(phi) * Math.sin(theta);
         
         // Apply smooth interpolation for smoother movement
         this.camera.position.lerp(new THREE.Vector3(x, y, z), this.damping);
@@ -291,10 +380,13 @@ class ThreeJSCanvas {
     
     // Immediate camera position update without lerping (for zoom)
     updateCameraPositionImmediate() {
-        // Calculate position using tracked distance
-        const x = this.cameraDistance * Math.sin(this.targetRotationY) * Math.cos(this.targetRotationX);
-        const y = this.cameraDistance * Math.sin(this.targetRotationX);
-        const z = this.cameraDistance * Math.cos(this.targetRotationY) * Math.cos(this.targetRotationX);
+        // Calculate position using proper spherical coordinates
+        const phi = this.targetRotationX; // Vertical rotation
+        const theta = this.targetRotationY; // Horizontal rotation
+        
+        const x = this.cameraDistance * Math.sin(phi) * Math.cos(theta);
+        const y = this.cameraDistance * Math.cos(phi);
+        const z = this.cameraDistance * Math.sin(phi) * Math.sin(theta);
         
         // Set position immediately without lerping
         this.camera.position.set(x, y, z);
@@ -303,10 +395,10 @@ class ThreeJSCanvas {
     
     resetCamera() {
         this.cameraDistance = 15;
-        this.targetRotationX = 0;
-        this.targetRotationY = 0;
-        this.currentRotationX = 0;
-        this.currentRotationY = 0;
+        this.targetRotationX = Math.PI / 3; // 60 degrees vertical
+        this.targetRotationY = Math.PI / 4; // 45 degrees horizontal
+        this.currentRotationX = this.targetRotationX;
+        this.currentRotationY = this.targetRotationY;
         this.updateCameraPositionImmediate();
     }
     
