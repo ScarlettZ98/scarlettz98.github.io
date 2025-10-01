@@ -1,4 +1,5 @@
 // Three.js Empty Canvas Setup
+// Dependencies: Floor class (from Floor.js)
 class ThreeJSCanvas {
     constructor() {
         this.scene = null;
@@ -37,6 +38,11 @@ class ThreeJSCanvas {
     init() {
         // Get canvas element
         this.canvas = document.getElementById('canvas');
+        
+        // Check if Floor class is available (warning only, don't stop initialization)
+        if (typeof Floor === 'undefined') {
+            console.warn('Floor class not found. Make sure Floor.js is loaded before script.js');
+        }
         
         // Read project settings
         this.loadProjectSettings();
@@ -247,7 +253,10 @@ class ThreeJSCanvas {
     animate() {
         requestAnimationFrame(() => this.animate());
         
-        this.renderer.render(this.scene, this.camera);
+        // Safety check to prevent render errors
+        if (this.renderer && this.scene && this.camera) {
+            this.renderer.render(this.scene, this.camera);
+        }
     }
     
     // ==========================================
@@ -423,39 +432,25 @@ class ThreeJSCanvas {
         this.scene.remove(object);
     }
     
-    // Build a floor block with specified dimensions and color
+    // Build a floor block with specified dimensions and color using Floor class
     build_floor(length, width, color) {
-        // Validate that length and width are even integers
-        if (!Number.isInteger(length) || !Number.isInteger(width) || length % 2 !== 0 || width % 2 !== 0) {
-            console.error('Length and width must be even integers');
+        // Check if Floor class is available
+        if (typeof Floor === 'undefined') {
+            console.error('Floor class not available. Cannot create floor.');
             return null;
         }
         
-        // Create geometry with 1 unit height
-        const geometry = new THREE.BoxGeometry(length, 1, width);
+        // Create a new Floor instance
+        const floor = new Floor(length, width, color);
         
-        // Create material with specified color
-        const material = new THREE.MeshLambertMaterial({ color: color });
+        // Check if floor was created successfully
+        if (floor && floor.getMesh()) {
+            // Add to scene
+            this.addToScene(floor.getMesh());
+            return floor;
+        }
         
-        // Create the mesh
-        const floorMesh = new THREE.Mesh(geometry, material);
-        
-        // Position the floor so that:
-        // - Center is at origin on X and Z axes
-        // - Top surface is at y = 0 (so bottom is at y = -1)
-        floorMesh.position.set(0, -0.5, 0);
-        
-        // Enable shadows
-        floorMesh.castShadow = true;
-        floorMesh.receiveShadow = true;
-        
-        // Add to scene
-        this.addToScene(floorMesh);
-        
-        console.log(`Floor created: ${length}x${width} units, color: ${color}`);
-        console.log(`Position: x=${-length/2} to ${length/2}, z=${-width/2} to ${width/2}, y=-1 to 0`);
-        
-        return floorMesh;
+        return null;
     }
     
 }
