@@ -1,5 +1,5 @@
 // Three.js Empty Canvas Setup
-// Dependencies: Floor class (from Floor.js)
+// Dependencies: Floor class (from Floor.js), Wall class (from Wall.js)
 class ThreeJSCanvas {
     constructor() {
         this.scene = null;
@@ -18,6 +18,7 @@ class ThreeJSCanvas {
         this.rotationSpeed = 0.005; // Control rotation sensitivity
         this.damping = 0.1; // Smooth interpolation
         this.cameraDistance = 25; 
+        this.frustumSize = 20; // For orthographic camera zoom
         
         // Grid system for edit mode
         this.gridHelpers = {
@@ -44,6 +45,11 @@ class ThreeJSCanvas {
             console.warn('Floor class not found. Make sure Floor.js is loaded before script.js');
         }
         
+        // Check if Wall class is available (warning only, don't stop initialization)
+        if (typeof Wall === 'undefined') {
+            console.warn('Wall class not found. Make sure Wall.js is loaded before script.js');
+        }
+        
         // Read project settings
         this.loadProjectSettings();
         
@@ -53,12 +59,13 @@ class ThreeJSCanvas {
         // Create ombre background
         this.createOmbreBackground("#0A0F1F", "#1C3C5E", "#FF6B35");
 
-        // Create camera (positioned for better viewing)
-        this.camera = new THREE.PerspectiveCamera(
-            45, // Reduced field of view for better perspective
-            window.innerWidth / window.innerHeight, // Aspect ratio
-            0.01, // Closer near clipping plane
-            200 // Increased far clipping plane
+        // Create isometric camera (orthographic for no perspective distortion)
+        const aspect = window.innerWidth / window.innerHeight;
+        this.camera = new THREE.OrthographicCamera(
+            -this.frustumSize * aspect, this.frustumSize * aspect, // left, right
+            this.frustumSize, -this.frustumSize,                   // top, bottom
+            0.01, // Near clipping plane
+            200   // Far clipping plane
         );
         // Position camera for better viewing (initial spherical position)
         this.currentRotationX = this.targetRotationX;
@@ -80,17 +87,35 @@ class ThreeJSCanvas {
         
         // Improve color and brightness
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.2; // Increase exposure for brighter scene
+        this.renderer.toneMapping = THREE.NoToneMapping; // Changed from ACES to preserve colors
+        this.renderer.toneMappingExposure = 1.0; // Standard exposure
         
         // Basic lighting setup
-        const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // Increased ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Increased ambient light with neutral white
         this.scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0); // Increased intensity
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6); // Reduced intensity with pure white light
         directionalLight.position.set(10, 10, 5);
         directionalLight.castShadow = true;
+        
+        // Configure shadow camera for better shadow quality
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 50;
+        directionalLight.shadow.camera.left = -20;
+        directionalLight.shadow.camera.right = 20;
+        directionalLight.shadow.camera.top = 20;
+        directionalLight.shadow.camera.bottom = -20;
+        directionalLight.shadow.bias = -0.0001; // Reduce shadow acne
+        
         this.scene.add(directionalLight);
+        
+        // Add a second directional light from a different angle for fill lighting
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.3); // Reduced fill light intensity
+        fillLight.position.set(-10, 8, -5);
+        fillLight.castShadow = false; // Only main light casts shadows to avoid conflicts
+        this.scene.add(fillLight);
         
         console.log('Three.js canvas initialized successfully!');
         
@@ -102,7 +127,12 @@ class ThreeJSCanvas {
         }
         
         // Build a textured floor (using color for now, can be changed to texture path)
-        this.build_floor(16, 16, "../src/assets/textures/wood.jpg");
+        this.build_floor(16, 16, "#ffb366"); // Light orange floor
+        
+        // Build some sample walls attached to the floor
+        this.build_wall(16, 1, 4, "#ff6b6b", 0, -8, 0);  // Red wall at back
+        this.build_wall(1, 16, 4, "#ff6b6b", -8, 0, 0);  // Red wall at left
+        this.build_wall(1, 1, 4, "#ff6b6b", -8, -8, 0);  // Red wall at corner
         
     }
     
@@ -264,7 +294,12 @@ class ThreeJSCanvas {
     // ==========================================
     
     onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
+        // Update orthographic camera frustum for new aspect ratio
+        const aspect = window.innerWidth / window.innerHeight;
+        this.camera.left = -this.frustumSize * aspect;
+        this.camera.right = this.frustumSize * aspect;
+        this.camera.top = this.frustumSize;
+        this.camera.bottom = -this.frustumSize;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
@@ -318,17 +353,22 @@ class ThreeJSCanvas {
         
         // Calculate zoom factor based on scroll direction
         const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9;
-        const newDistance = this.cameraDistance * zoomFactor;
+        const newFrustumSize = this.frustumSize * zoomFactor;
         
         // Prevent getting too close or too far
-        const minDistance = 5;   // Minimum zoom distance
-        const maxDistance = 50; // Maximum zoom distance
-        this.cameraDistance = Math.max(minDistance, Math.min(maxDistance, newDistance));
+        const minFrustumSize = 5;   // Minimum zoom (closer view)
+        const maxFrustumSize = 50;  // Maximum zoom (farther view)
+        this.frustumSize = Math.max(minFrustumSize, Math.min(maxFrustumSize, newFrustumSize));
         
-        // Force immediate camera position update with new distance
-        this.updateCameraPositionImmediate();
+        // Update camera frustum
+        const aspect = window.innerWidth / window.innerHeight;
+        this.camera.left = -this.frustumSize * aspect;
+        this.camera.right = this.frustumSize * aspect;
+        this.camera.top = this.frustumSize;
+        this.camera.bottom = -this.frustumSize;
+        this.camera.updateProjectionMatrix();
         
-        console.log('Zoom - New Distance:', this.cameraDistance.toFixed(2), 'Zoom Factor:', zoomFactor);
+        console.log('Orthographic Zoom - Frustum Size:', this.frustumSize.toFixed(2), 'Zoom Factor:', zoomFactor);
     }
     
     onCanvasClick(event) {
@@ -453,6 +493,30 @@ class ThreeJSCanvas {
         return null;
     }
     
+    // Build a wall block with specified dimensions and texture using Wall class
+    build_wall(length, width, height, texture, x = 0, z = 0, floorY = 0) {
+        // Check if Wall class is available
+        if (typeof Wall === 'undefined') {
+            console.error('Wall class not available. Cannot create wall.');
+            return null;
+        }
+        
+        // Create a new Wall instance
+        const wall = new Wall(length, width, height, texture);
+        
+        // Check if wall was created successfully
+        if (wall && wall.getMesh()) {
+            // Position the wall (keeping bottom attached to floor)
+            wall.moveTo(x, z, floorY);
+            
+            // Add to scene
+            this.addToScene(wall.getMesh());
+            return wall;
+        }
+        
+        return null;
+    }
+
 }
 
 // Initialize the Three.js canvas when the page loads

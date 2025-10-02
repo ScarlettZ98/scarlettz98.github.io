@@ -24,8 +24,10 @@ class Floor {
         
         if (typeof this.texture === 'string') {
             if (this.texture.startsWith('#') || this.texture.startsWith('rgb') || this.texture.startsWith('hsl')) {
-                // It's a color string
-                material = new THREE.MeshLambertMaterial({ color: this.texture });
+                // It's a color string - use MeshLambertMaterial for shadows
+                material = new THREE.MeshLambertMaterial({ 
+                    color: this.texture
+                });
             } else {
                 // It's a texture path
                 const textureLoader = new THREE.TextureLoader();
@@ -36,14 +38,20 @@ class Floor {
                 loadedTexture.wrapT = THREE.RepeatWrapping;
                 loadedTexture.repeat.set(this.length / 2, this.width / 2); // Adjust tiling based on floor size
                 
-                material = new THREE.MeshLambertMaterial({ map: loadedTexture });
+                material = new THREE.MeshLambertMaterial({ 
+                    map: loadedTexture
+                });
             }
         } else if (this.texture instanceof THREE.Texture) {
             // It's already a Three.js texture
-            material = new THREE.MeshLambertMaterial({ map: this.texture });
+            material = new THREE.MeshLambertMaterial({ 
+                map: this.texture
+            });
         } else {
             // Fallback to default color
-            material = new THREE.MeshLambertMaterial({ color: 0x808080 });
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0x808080
+            });
             console.warn('Invalid texture provided, using default gray color');
         }
         
@@ -83,7 +91,9 @@ class Floor {
             if (typeof texture === 'string') {
                 if (texture.startsWith('#') || texture.startsWith('rgb') || texture.startsWith('hsl')) {
                     // It's a color string
-                    material = new THREE.MeshLambertMaterial({ color: texture });
+                    material = new THREE.MeshLambertMaterial({ 
+                        color: texture
+                    });
                 } else {
                     // It's a texture path
                     const textureLoader = new THREE.TextureLoader();
@@ -94,11 +104,15 @@ class Floor {
                     loadedTexture.wrapT = THREE.RepeatWrapping;
                     loadedTexture.repeat.set(this.length / 2, this.width / 2);
                     
-                    material = new THREE.MeshLambertMaterial({ map: loadedTexture });
+                    material = new THREE.MeshLambertMaterial({ 
+                        map: loadedTexture
+                    });
                 }
             } else if (texture instanceof THREE.Texture) {
                 // It's already a Three.js texture
-                material = new THREE.MeshLambertMaterial({ map: texture });
+                material = new THREE.MeshLambertMaterial({ 
+                    map: texture
+                });
             } else {
                 console.warn('Invalid texture provided to setTexture method');
                 return;
