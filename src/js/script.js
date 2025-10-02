@@ -196,8 +196,8 @@ class ThreeJSCanvas {
     }
     
     createGridHelper(axis) {
-        const gridSize = 20;
-        const divisions = 20;
+        const gridSize = 200;
+        const divisions = 200;
         const colorCenterLine = 0xff0000; // Red center lines (origin)
         const colorGrid = 0x222222;
         
