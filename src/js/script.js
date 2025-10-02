@@ -101,8 +101,8 @@ class ThreeJSCanvas {
             console.log('👁️ VIEW MODE is active');
         }
         
-        // Build a blue floor
-        this.build_floor(10, 6, "#0000ff");
+        // Build a textured floor (using color for now, can be changed to texture path)
+        this.build_floor(16, 16, "../src/assets/textures/wood.jpg");
         
     }
     
@@ -432,8 +432,8 @@ class ThreeJSCanvas {
         this.scene.remove(object);
     }
     
-    // Build a floor block with specified dimensions and color using Floor class
-    build_floor(length, width, color) {
+    // Build a floor block with specified dimensions and texture using Floor class
+    build_floor(length, width, texture) {
         // Check if Floor class is available
         if (typeof Floor === 'undefined') {
             console.error('Floor class not available. Cannot create floor.');
@@ -441,7 +441,7 @@ class ThreeJSCanvas {
         }
         
         // Create a new Floor instance
-        const floor = new Floor(length, width, color);
+        const floor = new Floor(length, width, texture);
         
         // Check if floor was created successfully
         if (floor && floor.getMesh()) {
